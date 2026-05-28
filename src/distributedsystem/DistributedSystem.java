@@ -25,7 +25,7 @@ public class DistributedSystem {
         System.out.println("==================================================================\n");
 
         // 🚀 CONTROL PANEL FOR A/B SYSTEM MODE TESTING
-        Scenario activeScenario = Scenario.NODE_FAILURE; 
+        Scenario activeScenario = Scenario.HIGH_CONCURRENCY; 
         NameServer.NamingMode activeNaming = NameServer.NamingMode.FLAT; //change to FLAT if want naming flat
         boolean useSequentialEngine = true; // true -> Strong Sequential (CP), false -> Eventual (AP) [INDEX]
 
@@ -112,9 +112,12 @@ public class DistributedSystem {
                                 MessageHandler.telemetry.successfulBookings.incrementAndGet();
                                 return passengerId;
                             } else {
-                               //  Track the silent overwrites caused by Eventual LWW
-                                MessageHandler.telemetry.conflictsDetected.incrementAndGet();
-                                return currentOwner; 
+                               // 🛡️ THE FIX: Only let the Oracle count conflicts if we are using Eventual Consistency!
+                                // Sequential Consistency already counts its own conflicts on the server side.
+                                if (!useSequentialEngine) {
+                                    MessageHandler.telemetry.conflictsDetected.incrementAndGet(); 
+                                }
+                                    return currentOwner; 
                             }
                         });
                     }
