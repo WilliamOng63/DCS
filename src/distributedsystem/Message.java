@@ -14,7 +14,8 @@ public class Message {
         WRITE,  
         READ,    
         REPLICATE,
-        MIGRATE
+        MIGRATE,
+        WRITE_ACK  // New: Acknowledge successful write with latency info
     }
     private final String senderId;
     private final Type type;
@@ -24,8 +25,14 @@ public class Message {
     private final Command command;
     private final long timeStamp;
     private final int sequenceId;
+    private final long operationLatencyMs;  // New: Track per-operation latency
+    private final boolean wasRejected;      // New: Track if write was rejected
 
     public Message(Type type, Command command, String key, String value, long timeStamp, String senderId, int sequenceId) {
+        this(type, command, key, value, timeStamp, senderId, sequenceId, 0L, false);
+    }
+
+    public Message(Type type, Command command, String key, String value, long timeStamp, String senderId, int sequenceId, long operationLatencyMs, boolean wasRejected) {
         this.type = type;
         this.command = command;
         this.key = key;
@@ -33,6 +40,8 @@ public class Message {
         this.timeStamp = timeStamp;
         this.senderId = senderId;
         this.sequenceId = sequenceId;
+        this.operationLatencyMs = operationLatencyMs;
+        this.wasRejected = wasRejected;
     }
 
     public Command getCommand() {
@@ -67,5 +76,12 @@ public class Message {
         return timeStamp;
     }
     
+    public long getOperationLatencyMs() {
+        return operationLatencyMs;
+    }
+    
+    public boolean wasRejected() {
+        return wasRejected;
+    }
 }
 

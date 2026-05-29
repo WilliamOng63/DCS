@@ -13,6 +13,11 @@ import java.util.*;
 
 public class EventualConsistency implements consistencyHandler {
     private final NameServer dns;
+    
+    // 🚀 NEW: Simulated latency for eventual consistency writes (fire-and-forget)
+    // Much lower than Sequential Consistency because no consensus needed
+    private static final int FAST_LATENCY_MIN_MS = 1;
+    private static final int FAST_LATENCY_MAX_MS = 3;
 
     public EventualConsistency(NameServer dns) {
         this.dns = dns;
@@ -28,6 +33,18 @@ public class EventualConsistency implements consistencyHandler {
         String targetSeat = msg.getKey();    // e.g., "SEAT_42"
         String passengerId = msg.getValue(); // e.g., "Passenger-A"
 
+        // 🚀 NEW: Simulate low latency for fire-and-forget async write
+        // This represents fast local commit without waiting for consensus
+        try {
+            int fastLatencyMs = FAST_LATENCY_MIN_MS + (int)(Math.random() * (FAST_LATENCY_MAX_MS - FAST_LATENCY_MIN_MS));
+            Thread.sleep(fastLatencyMs);
+            
+            // Track this latency in metrics
+            MessageHandler.telemetry.cumulativeOperationLatencyMs.addAndGet(fastLatencyMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         // Evaluate vacancy inside this decentralized region data layer snapshot view
         if (currentSnapshot == null || !currentSnapshot.contains(targetSeat + ":OCCUPIED")) {
             
@@ -40,6 +57,7 @@ public class EventualConsistency implements consistencyHandler {
 
             // 🚀 QUIET PROPAGATION: Removed the high-frequency println here!
             // Broadcast replication data packet over the VLAN wire links asynchronously
+            // This happens in the background - write returns to client immediately!
             for (String domain : dns.getAllNodes()) {
                 // FIXED: Aligned strictly to your modernized resolveMailbox signature
                 Mailbox targetMailbox = dns.resolve(domain);
@@ -57,6 +75,11 @@ public class EventualConsistency implements consistencyHandler {
                     node.getMyMailbox().send(targetMailbox, replicateMsg);
                 }
             }
+        } else {
+            // 🚀 NEW: In eventual consistency, conflicts are allowed at the local level
+            // They get resolved later during background replication (Last-Write-Wins)
+            // This is why eventual consistency has high throughput but eventual conflicts
+            MessageHandler.telemetry.conflictsDetected.incrementAndGet();
         }
     }
 

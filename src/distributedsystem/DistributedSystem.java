@@ -24,10 +24,41 @@ public class DistributedSystem {
         System.out.println("   DISTRIFLY: ENTERPRISE DISTRIBUTED SYSTEM REPLICATION GRID     ");
         System.out.println("==================================================================\n");
 
+        // 🚀 RUN ALL 4 PERFORMANCE TEST COMBINATIONS
+        System.out.println(">>> RUNNING ALL 4 PERFORMANCE METRIC CONFIGURATIONS <<<\n");
+        
+        // Test 1: Eventual Consistency + Structured Naming
+        System.out.println("\n\n████████████████████████████████████████████████████████████████");
+        System.out.println("TEST 1: EVENTUAL CONSISTENCY + STRUCTURED NAMING");
+        System.out.println("████████████████████████████████████████████████████████████████\n");
+        runPerformanceTest(false, NameServer.NamingMode.STRUCTURED);
+        
+        // Test 2: Eventual Consistency + Flat Naming
+        System.out.println("\n\n████████████████████████████████████████████████████████████████");
+        System.out.println("TEST 2: EVENTUAL CONSISTENCY + FLAT NAMING");
+        System.out.println("████████████████████████████████████████████████████████████████\n");
+        runPerformanceTest(false, NameServer.NamingMode.FLAT);
+        
+        // Test 3: Sequential Consistency + Structured Naming
+        System.out.println("\n\n████████████████████████████████████████████████████████████████");
+        System.out.println("TEST 3: SEQUENTIAL CONSISTENCY + STRUCTURED NAMING");
+        System.out.println("████████████████████████████████████████████████████████████████\n");
+        runPerformanceTest(true, NameServer.NamingMode.STRUCTURED);
+        
+        // Test 4: Sequential Consistency + Flat Naming
+        System.out.println("\n\n████████████████████████████████████████████████████████████████");
+        System.out.println("TEST 4: SEQUENTIAL CONSISTENCY + FLAT NAMING");
+        System.out.println("████████████████████████████████████████████████████████████████\n");
+        runPerformanceTest(true, NameServer.NamingMode.FLAT);
+        
+        System.out.println("\n\n==================================================================");
+        System.out.println("         DISTRIFLY ENTERPRISE REPLICATION BENCH ENGINE TERMINATED ");
+        System.out.println("==================================================================");
+    }
+
+    public static void runPerformanceTest(boolean useSequentialEngine, NameServer.NamingMode activeNaming) throws InterruptedException {
         // 🚀 CONTROL PANEL FOR A/B SYSTEM MODE TESTING
         Scenario activeScenario = Scenario.HIGH_CONCURRENCY; 
-        NameServer.NamingMode activeNaming = NameServer.NamingMode.FLAT; //change to FLAT if want naming flat
-        boolean useSequentialEngine = true; // true -> Strong Sequential (CP), false -> Eventual (AP) [INDEX]
 
         System.out.println(">>> System Deployment Scenario : " + activeScenario);
         System.out.println(">>> Data Replication Engine    : " + (useSequentialEngine ? "STRONG SEQUENTIAL" : "EVENTUAL CONSISTENCY"));
@@ -59,9 +90,11 @@ public class DistributedSystem {
         MessageHandler.telemetry.totalRequests.set(0);
         MessageHandler.telemetry.successfulBookings.set(0);
         MessageHandler.telemetry.conflictsDetected.set(0);
+        MessageHandler.telemetry.clientSideRejections.set(0);  // 🚀 NEW: Reset rejection counter
         MessageHandler.telemetry.totalReads.set(0);
         MessageHandler.telemetry.staleReadsDetected.set(0);
         MessageHandler.telemetry.totalLatencyMs.set(0);
+        MessageHandler.telemetry.cumulativeOperationLatencyMs.set(0);  // 🚀 NEW: Reset cumulative latency
 
         int numUsers = (activeScenario == Scenario.HIGH_CONCURRENCY) ? 100 : 10;
         int numOperations = (activeScenario == Scenario.HIGH_CONCURRENCY) ? 1000 : 100;
@@ -103,17 +136,23 @@ public class DistributedSystem {
                     String domainHandle = targetedServer.getNodeId().equals("Node_A") ? domainA : targetedServer.getNodeId().equals("Node_B") ? domainB : domainC;
                     Mailbox resolvedNIC = dns.resolve(domainHandle);
                     if (resolvedNIC != null) {
-                        Message bookingPacket = new Message(networkProfile, Message.Command.WRITE, targetSeatCode, passengerId, System.currentTimeMillis(), passengerId, -1);
+                        long operationStartTime = System.currentTimeMillis();
+                        Message bookingPacket = new Message(networkProfile, Message.Command.WRITE, targetSeatCode, passengerId, operationStartTime, passengerId, -1);
                         targetedServer.getMyMailbox().send(resolvedNIC, bookingPacket); 
 
+                        // 🚀 NEW: Track latency for Sequential Consistency writes
+                        // Sequential handler will add its consensus delay to metrics
+                        // Eventual handler will add its fast latency to metrics
+                        
                         globalTruthOracle.compute(targetSeatCode, (k, currentOwner) -> {
                            if (currentOwner == null) {
                               // FIX 2: Removed totalRequests double-counting here!
                                 MessageHandler.telemetry.successfulBookings.incrementAndGet();
                                 return passengerId;
                             } else {
-                               // 🛡️ THE FIX: Only let the Oracle count conflicts if we are using Eventual Consistency!
-                                // Sequential Consistency already counts its own conflicts on the server side.
+                               // 🛡️ IMPROVED: Only let the Oracle count conflicts for Eventual Consistency
+                                // Sequential Consistency rejects conflicts at the client level (pessimistic locking)
+                                // So it should have near-zero cluster collisions
                                 if (!useSequentialEngine) {
                                     MessageHandler.telemetry.conflictsDetected.incrementAndGet(); 
                                 }
@@ -121,6 +160,10 @@ public class DistributedSystem {
                             }
                         });
                     }
+                } else if (useSequentialEngine && !looksVacantLocally) {
+                    // 🚀 NEW: Track client-side rejections for Sequential Consistency
+                    // This accounts for pessimistic locking rejections at the client level
+                    MessageHandler.telemetry.clientSideRejections.incrementAndGet();
                 }
                 transactionLatch.countDown();
             });
@@ -143,12 +186,10 @@ public class DistributedSystem {
         // 🚀 EXPORT ENGINE BINDING: Output both macro-telemetry reports cleanly with 0 console spam
         dns.printSummaryReport(); // ◄── Added to print name server path hops & network drop ratios
         
-        String scenarioLabel = (useSequentialEngine ? "STRONG_SEQUENTIAL_" : "EVENTUAL_") + activeScenario.toString();
+        String consistencyType = useSequentialEngine ? "SEQUENTIAL" : "EVENTUAL";
+        String namingType = activeNaming == NameServer.NamingMode.FLAT ? "FLAT" : "STRUCTURED";
+        String scenarioLabel = consistencyType + "_" + namingType + "_" + activeScenario.toString();
         MessageHandler.telemetry.printReport(systemEndTimestamp - systemStartTimestamp, scenarioLabel);
-        
-        System.out.println("==================================================================");
-        System.out.println("         DISTRIFLY ENTERPRISE REPLICATION BENCH ENGINE TERMINATED ");
-        System.out.println("==================================================================");
     }
 }
 

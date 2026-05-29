@@ -1,0 +1,192 @@
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+==================================================================
+   DISTRIFLY: ENTERPRISE DISTRIBUTED SYSTEM REPLICATION GRID     
+==================================================================
+
+>>> RUNNING ALL 4 PERFORMANCE METRIC CONFIGURATIONS <<<
+
+
+
+████████████████████████████████████████████████████████████████
+TEST 1: EVENTUAL CONSISTENCY + STRUCTURED NAMING
+████████████████████████████████████████████████████████████████
+
+>>> System Deployment Scenario : HIGH_CONCURRENCY
+>>> Data Replication Engine    : EVENTUAL CONSISTENCY
+>>> Naming Topology Resolution : STRUCTURED
+
+[DNS BOOT] Naming Service initialized in mode: STRUCTURED
+[REGISTRATION] Structured Tree Path created: Root -> Node_A -> Attached to Mailbox.
+[REGISTRATION] Structured Tree Path created: Root -> Node_B -> Attached to Mailbox.
+[REGISTRATION] Structured Tree Path created: Root -> Node_C -> Attached to Mailbox.
+[WORKLOAD FLUSHED] Waiting 4 seconds for network convergence...
+
+>>> [PROCESS OPTIMIZATION] Executing live state migration trial (Node_A -> Node_C) <<<
+
+✨✨✨ [PROCESS MIGRATION COMPLETED] Target Node Node_C has successfully absorbed the imported state footprint! Injected Value: "SEAT_42:OCCUPIED_BY_Passenger-68-91, SEAT_17:OCCUPIED_BY_Passenger-203-47, SEAT_8:OCCUPIED_BY_Passenger-105-68, SEAT_35:OCCUPIED_BY_Passenger-98-4, SEAT_43:OCCUPIED_BY_Passenger-101-72, SEAT_10:OCCUPIED_BY_Passenger-54-23, SEAT_36:OCCUPIED_BY_Passenger-108-25, SEAT_28:OCCUPIED_BY_Passenger-80-49, SEAT_46:OCCUPIED_BY_Passenger-106-80, SEAT_37:OCCUPIED_BY_Passenger-64-27, SEAT_24:OCCUPIED_BY_Passenger-35-89, SEAT_22:OCCUPIED_BY_Passenger-71-62, SEAT_41:OCCUPIED_BY_Passenger-204-70, SEAT_12:OCCUPIED_BY_Passenger-49-88, SEAT_27:OCCUPIED_BY_Passenger-119-59, SEAT_29:OCCUPIED_BY_Passenger-75-32, SEAT_38:OCCUPIED_BY_Passenger-218-61, SEAT_40:OCCUPIED_BY_Passenger-52-92, SEAT_4:OCCUPIED_BY_Passenger-58-24, SEAT_39:OCCUPIED_BY_Passenger-101-70, SEAT_34:OCCUPIED_BY_Passenger-47-35, SEAT_3:OCCUPIED_BY_Passenger-95-99, SEAT_30:OCCUPIED_BY_Passenger-115-90, SEAT_19:OCCUPIED_BY_Passenger-35-73, SEAT_33:OCCUPIED_BY_Passenger-67-2, SEAT_13:OCCUPIED_BY_Passenger-33-85, SEAT_47:OCCUPIED_BY_Passenger-81-24, SEAT_7:OCCUPIED_BY_Passenger-203-24, SEAT_15:OCCUPIED_BY_Passenger-112-79, SEAT_14:OCCUPIED_BY_Passenger-207-13, SEAT_25:OCCUPIED_BY_Passenger-80-5, SEAT_21:OCCUPIED_BY_Passenger-81-5, SEAT_23:OCCUPIED_BY_Passenger-205-30, SEAT_11:OCCUPIED_BY_Passenger-54-30, SEAT_2:OCCUPIED_BY_Passenger-95-43, SEAT_45:OCCUPIED_BY_Passenger-79-25, SEAT_49:OCCUPIED_BY_Passenger-95-24, SEAT_48:OCCUPIED_BY_Passenger-117-43, SEAT_1:OCCUPIED_BY_Passenger-107-7, SEAT_6:OCCUPIED_BY_Passenger-81-17, SEAT_44:OCCUPIED_BY_Passenger-40-88, SEAT_18:OCCUPIED_BY_Passenger-43-36, SEAT_16:OCCUPIED_BY_Passenger-204-56, SEAT_26:OCCUPIED_BY_Passenger-209-81, SEAT_20:OCCUPIED_BY_Passenger-77-97, SEAT_32:OCCUPIED_BY_Passenger-38-94, SEAT_50:OCCUPIED_BY_Passenger-69-64, SEAT_31:OCCUPIED_BY_Passenger-213-88, SEAT_9:OCCUPIED_BY_Passenger-40-9, SEAT_5:OCCUPIED_BY_Passenger-26-70"
+==================================================
+=== NAMING ARCHITECTURE RESOLUTION SUMMARY     ===
+==================================================
+• Active Architecture      : STRUCTURED
+• Total Resolution Audits : 1451
+• Injected Packet Drops    : 70
+• Address Lookup Success   : 65.75%
+• Average Traversal Hops   : 2.00 hops
+==================================================
+
+
+==================================================
+=== PERFORMANCE METRICS: EVENTUAL_STRUCTURED_HIGH_CONCURRENCY ===
+==================================================
+Total Write Requests : 953 (Flight Bookings Tried)
+Successful Bookings  : 50 (Confirmed Boarding Passes)
+Client-Side Rejections: 0 (Pessimistic Locking Blocks)
+Conflicts/Violations : 1706 (Total Cluster Collisions)
+--------------------------------------------------
+Total Read Requests  : 1000 (Inventory Queries)
+Stale Reads Detected : 894 (Overbooking Vector Warnings)
+--------------------------------------------------
+Average Operation Latency (measured): 0.74 ms
+Average Latency (from duration)  : 2.94 ms
+Throughput           : 340.54 ops/sec
+==================================================
+
+
+
+████████████████████████████████████████████████████████████████
+TEST 2: EVENTUAL CONSISTENCY + FLAT NAMING
+████████████████████████████████████████████████████████████████
+
+>>> System Deployment Scenario : HIGH_CONCURRENCY
+>>> Data Replication Engine    : EVENTUAL CONSISTENCY
+>>> Naming Topology Resolution : FLAT
+
+[DNS BOOT] Naming Service initialized in mode: FLAT
+[REGISTRATION] Flat Name recorded: "star.asia.Node_A" -> Bound to Mailbox.
+[REGISTRATION] Flat Name recorded: "star.europe.Node_B" -> Bound to Mailbox.
+[REGISTRATION] Flat Name recorded: "onworld.asia.Node_C" -> Bound to Mailbox.
+[WORKLOAD FLUSHED] Waiting 4 seconds for network convergence...
+
+>>> [PROCESS OPTIMIZATION] Executing live state migration trial (Node_A -> Node_C) <<<
+
+✨✨✨ [PROCESS MIGRATION COMPLETED] Target Node Node_C has successfully absorbed the imported state footprint! Injected Value: "SEAT_15:OCCUPIED_BY_Passenger-1119-20, SEAT_45:OCCUPIED_BY_Passenger-1087-11, SEAT_9:OCCUPIED_BY_Passenger-1089-73, SEAT_38:OCCUPIED_BY_Passenger-1097-64, SEAT_17:OCCUPIED_BY_Passenger-1090-2, SEAT_6:OCCUPIED_BY_Passenger-1095-44, SEAT_39:OCCUPIED_BY_Passenger-1094-0"
+==================================================
+=== NAMING ARCHITECTURE RESOLUTION SUMMARY     ===
+==================================================
+• Active Architecture      : FLAT
+• Total Resolution Audits : 2750
+• Injected Packet Drops    : 118
+• Address Lookup Success   : 95.71%
+• Average Traversal Hops   : 1.57 hops
+==================================================
+
+
+==================================================
+=== PERFORMANCE METRICS: EVENTUAL_FLAT_HIGH_CONCURRENCY ===
+==================================================
+Total Write Requests : 963 (Flight Bookings Tried)
+Successful Bookings  : 50 (Confirmed Boarding Passes)
+Client-Side Rejections: 0 (Pessimistic Locking Blocks)
+Conflicts/Violations : 1293 (Total Cluster Collisions)
+--------------------------------------------------
+Total Read Requests  : 1000 (Inventory Queries)
+Stale Reads Detected : 948 (Overbooking Vector Warnings)
+--------------------------------------------------
+Average Operation Latency (measured): 0.74 ms
+Average Latency (from duration)  : 2.82 ms
+Throughput           : 354.78 ops/sec
+==================================================
+
+
+
+████████████████████████████████████████████████████████████████
+TEST 3: SEQUENTIAL CONSISTENCY + STRUCTURED NAMING
+████████████████████████████████████████████████████████████████
+
+>>> System Deployment Scenario : HIGH_CONCURRENCY
+>>> Data Replication Engine    : STRONG SEQUENTIAL
+>>> Naming Topology Resolution : STRUCTURED
+
+[DNS BOOT] Naming Service initialized in mode: STRUCTURED
+[REGISTRATION] Structured Tree Path created: Root -> Node_A -> Attached to Mailbox.
+[REGISTRATION] Structured Tree Path created: Root -> Node_B -> Attached to Mailbox.
+[REGISTRATION] Structured Tree Path created: Root -> Node_C -> Attached to Mailbox.
+[WORKLOAD FLUSHED] Waiting 4 seconds for network convergence...
+
+>>> [PROCESS OPTIMIZATION] Executing live state migration trial (Node_A -> Node_C) <<<
+==================================================
+=== NAMING ARCHITECTURE RESOLUTION SUMMARY     ===
+==================================================
+• Active Architecture      : STRUCTURED
+• Total Resolution Audits : 1151
+• Injected Packet Drops    : 61
+• Address Lookup Success   : 82.19%
+• Average Traversal Hops   : 2.00 hops
+==================================================
+
+
+==================================================
+=== PERFORMANCE METRICS: SEQUENTIAL_STRUCTURED_HIGH_CONCURRENCY ===
+==================================================
+Total Write Requests : 437 (Flight Bookings Tried)
+Successful Bookings  : 50 (Confirmed Boarding Passes)
+Client-Side Rejections: 0 (Pessimistic Locking Blocks)
+Conflicts/Violations : 387 (Total Cluster Collisions)
+--------------------------------------------------
+Total Read Requests  : 1000 (Inventory Queries)
+Stale Reads Detected : 0 (Overbooking Vector Warnings)
+--------------------------------------------------
+Average Operation Latency (measured): 0.00 ms
+Average Latency (from duration)  : 3.84 ms
+Throughput           : 260.33 ops/sec
+==================================================
+
+
+
+████████████████████████████████████████████████████████████████
+TEST 4: SEQUENTIAL CONSISTENCY + FLAT NAMING
+████████████████████████████████████████████████████████████████
+
+>>> System Deployment Scenario : HIGH_CONCURRENCY
+>>> Data Replication Engine    : STRONG SEQUENTIAL
+>>> Naming Topology Resolution : FLAT
+
+[DNS BOOT] Naming Service initialized in mode: FLAT
+[REGISTRATION] Flat Name recorded: "star.asia.Node_A" -> Bound to Mailbox.
+[REGISTRATION] Flat Name recorded: "star.europe.Node_B" -> Bound to Mailbox.
+[REGISTRATION] Flat Name recorded: "onworld.asia.Node_C" -> Bound to Mailbox.
+[WORKLOAD FLUSHED] Waiting 4 seconds for network convergence...
+
+>>> [PROCESS OPTIMIZATION] Executing live state migration trial (Node_A -> Node_C) <<<
+==================================================
+=== NAMING ARCHITECTURE RESOLUTION SUMMARY     ===
+==================================================
+• Active Architecture      : FLAT
+• Total Resolution Audits : 1151
+• Injected Packet Drops    : 50
+• Address Lookup Success   : 95.66%
+• Average Traversal Hops   : 1.58 hops
+==================================================
+
+
+==================================================
+=== PERFORMANCE METRICS: SEQUENTIAL_FLAT_HIGH_CONCURRENCY ===
+==================================================
+Total Write Requests : 459 (Flight Bookings Tried)
+Successful Bookings  : 50 (Confirmed Boarding Passes)
+Client-Side Rejections: 0 (Pessimistic Locking Blocks)
+Conflicts/Violations : 409 (Total Cluster Collisions)
+--------------------------------------------------
+Total Read Requests  : 1000 (Inventory Queries)
+Stale Reads Detected : 0 (Overbooking Vector Warnings)
+--------------------------------------------------
+Average Operation Latency (measured): 0.00 ms
+Average Latency (from duration)  : 3.79 ms
+Throughput           : 264.07 ops/sec
+==================================================
+
+
+
+==================================================================
+         DISTRIFLY ENTERPRISE REPLICATION BENCH ENGINE TERMINATED 
+==================================================================
