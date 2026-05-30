@@ -123,6 +123,7 @@ public class DistributedSystem {
                 // FIX 1: Log the read operation manually since we are directly accessing local memory
                 MessageHandler.telemetry.totalReads.incrementAndGet();
                 
+                //Check local server for the seat availability
                 String localVariableSnapshot = targetedServer.getDataValue();
                 boolean looksVacantLocally = localVariableSnapshot == null || !localVariableSnapshot.contains(targetSeatCode + ":OCCUPIED");
                 

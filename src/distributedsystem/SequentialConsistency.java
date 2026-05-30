@@ -73,8 +73,8 @@ public class SequentialConsistency implements consistencyHandler {
 
         // 🚀 NEW: Pessimistic locking - try to acquire exclusive lock on the key
         // This represents the "prepare phase" of 2PC or Paxos/Raft quorum gathering
-        if (!acquireLock(targetSeat)) {
-            // 🚀 NEW: Write rejected due to lock contention - pessimistic approach prevents conflicts
+        if (!acquireLock(targetSeat)) 
+{            // 🚀 NEW: Write rejected due to lock contention - pessimistic approach prevents conflicts
             MessageHandler.telemetry.clientSideRejections.incrementAndGet();
             return;  // Early rejection - never reaches the cluster
         }
@@ -149,6 +149,8 @@ public class SequentialConsistency implements consistencyHandler {
     }
 
     @Override public void handleRead(DistributedNode node, Message msg) {}
+    
+    @Override public void handleReplicateNack(DistributedNode node, Message msg) {}
 }
 
 

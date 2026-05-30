@@ -12,5 +12,6 @@ public interface consistencyHandler {
     void handleWrite(DistributedNode node, Message msg);
     void handleRead(DistributedNode node, Message msg);
     void handleReplicate(DistributedNode node, Message msg);
+    void handleReplicateNack(DistributedNode node, Message msg);  // New: Handle conflict rollback (FWW)
     void handleRestart(DistributedNode node);
 }

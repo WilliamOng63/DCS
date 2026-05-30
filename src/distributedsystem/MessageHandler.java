@@ -40,6 +40,16 @@ public class MessageHandler {
                 handler.handleReplicate(node, msg);
                 break;
                 
+            case REPLICATE_ACK:
+                // 🚀 NEW: FWW - Successful replication, no conflict (telemetry only, no state change)
+                // Optional: Could track successful replication waves here if needed
+                break;
+                
+            case REPLICATE_NACK:
+                // 🚀 NEW: FWW - Peer had earlier write, rollback our optimistic commit
+                handler.handleReplicateNack(node, msg);
+                break;
+                
             case READ:
                 telemetry.totalReads.incrementAndGet(); 
                 
