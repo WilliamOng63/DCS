@@ -23,6 +23,12 @@ public class MessageHandler {
     public consistencyHandler getHandler() { return handler; }
 
     public synchronized void handleIncomingMessage(DistributedNode node, Message msg) {
+        // 🚀 FIXED: Calculate actual per-operation latency from message creation time to processing time
+        long currentTime = System.currentTimeMillis();
+        long operationLatency = currentTime - msg.getTimeStamp();
+        telemetry.cumulativeOperationLatencyMs.addAndGet(operationLatency);
+        telemetry.messagesProcessed.incrementAndGet();  // 🚀 Track actual messages for accurate latency
+        
         // Suppressed high-frequency spam logs to keep output clean as requested
         switch (msg.getCommand()) {
             case WRITE:
@@ -38,11 +44,6 @@ public class MessageHandler {
                 
             case REPLICATE:
                 handler.handleReplicate(node, msg);
-                break;
-                
-            case REPLICATE_ACK:
-                // 🚀 NEW: FWW - Successful replication, no conflict (telemetry only, no state change)
-                // Optional: Could track successful replication waves here if needed
                 break;
                 
             case REPLICATE_NACK:
@@ -90,6 +91,7 @@ public class MessageHandler {
         public final java.util.concurrent.atomic.AtomicInteger clientSideRejections = new java.util.concurrent.atomic.AtomicInteger(0);  // New: Track pessimistic rejections
         public final java.util.concurrent.atomic.AtomicInteger totalReads = new java.util.concurrent.atomic.AtomicInteger(0);
         public final java.util.concurrent.atomic.AtomicInteger staleReadsDetected = new java.util.concurrent.atomic.AtomicInteger(0);
+        public final java.util.concurrent.atomic.AtomicInteger messagesProcessed = new java.util.concurrent.atomic.AtomicInteger(0);  // 🚀 NEW: Count actual messages for latency
         public final java.util.concurrent.atomic.AtomicLong totalLatencyMs = new java.util.concurrent.atomic.AtomicLong(0);
         public final java.util.concurrent.atomic.AtomicLong cumulativeOperationLatencyMs = new java.util.concurrent.atomic.AtomicLong(0);  // New: Track total latency across operations
 
@@ -106,18 +108,18 @@ public class MessageHandler {
             System.out.printf("Stale Reads Detected : %d (Overbooking Vector Warnings)\n", staleReadsDetected.get());
             System.out.println("--------------------------------------------------");
             
-            // 🚀 IMPROVED: Compute average latency from actual per-operation measurements
-            long totalOps = totalRequests.get() + totalReads.get();
-            double actualAvgLatency = totalOps > 0 
-                ? (double) cumulativeOperationLatencyMs.get() / totalOps 
+            // 🚀 FIXED: Calculate average latency ONLY from messages actually processed (not local reads)
+            int totalMsgsProcessed = messagesProcessed.get();
+            double actualAvgLatency = totalMsgsProcessed > 0 
+                ? (double) cumulativeOperationLatencyMs.get() / totalMsgsProcessed 
                 : 0.0;
             
-            double trueAvgLatency = totalOps > 0 ? (double) durationMs / totalOps : 0.0;
+            long totalOps = totalRequests.get() + totalReads.get();
+            double throughput = totalOps > 0 ? (double) totalOps / (Math.max(1, durationMs) / 1000.0) : 0.0;
             
-            System.out.printf("Average Operation Latency (measured): %.2f ms\n", actualAvgLatency);
-            System.out.printf("Average Latency (from duration)  : %.2f ms\n", trueAvgLatency);
-            System.out.printf("Throughput           : %.2f ops/sec\n",
-                    (totalOps / (Math.max(1, durationMs) / 1000.0)));
+            System.out.printf("Average Message Latency (measured): %.2f ms\n", actualAvgLatency);
+            System.out.printf("Messages Processed   : %d\n", totalMsgsProcessed);
+            System.out.printf("Throughput           : %.2f ops/sec\n", throughput);
             System.out.println("==================================================\n");
         }
     }

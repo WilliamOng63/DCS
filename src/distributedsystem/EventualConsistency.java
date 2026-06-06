@@ -136,7 +136,6 @@ public class EventualConsistency implements consistencyHandler {
         String currentSnapshot = node.getDataValue();
         String targetSeat = msg.getKey();           // e.g., "SEAT_42"
         String incomingState = msg.getValue();      // The full updated snapshot from the sender
-        long incomingTimestamp = msg.getTimeStamp(); // 🚀 The timestamp of the write request
         String senderId = msg.getSenderId();
         
         // 🚀 PARSE: Extract the timestamp from the incoming replicated record for this specific seat
@@ -152,7 +151,7 @@ public class EventualConsistency implements consistencyHandler {
                                      : currentSnapshot + ", " + extractSeatRecordFromSnapshot(incomingState, targetSeat);
             node.setLocalDataValue(updatedSnapshot);
             
-            // Optional: Send ACK to confirm successful replication
+            // Send ACK to confirm successful replication
             Message ackMsg = new Message(
                 Message.Type.EVENTUAL,
                 Message.Command.REPLICATE_ACK,

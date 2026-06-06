@@ -58,7 +58,7 @@ public class DistributedSystem {
 
     public static void runPerformanceTest(boolean useSequentialEngine, NameServer.NamingMode activeNaming) throws InterruptedException {
         // 🚀 CONTROL PANEL FOR A/B SYSTEM MODE TESTING
-        Scenario activeScenario = Scenario.HIGH_CONCURRENCY; 
+        Scenario activeScenario = Scenario.NORMAL; 
 
         System.out.println(">>> System Deployment Scenario : " + activeScenario);
         System.out.println(">>> Data Replication Engine    : " + (useSequentialEngine ? "STRONG SEQUENTIAL" : "EVENTUAL CONSISTENCY"));
@@ -93,6 +93,7 @@ public class DistributedSystem {
         MessageHandler.telemetry.clientSideRejections.set(0);  // 🚀 NEW: Reset rejection counter
         MessageHandler.telemetry.totalReads.set(0);
         MessageHandler.telemetry.staleReadsDetected.set(0);
+        MessageHandler.telemetry.messagesProcessed.set(0);  // 🚀 NEW: Reset message counter
         MessageHandler.telemetry.totalLatencyMs.set(0);
         MessageHandler.telemetry.cumulativeOperationLatencyMs.set(0);  // 🚀 NEW: Reset cumulative latency
 
