@@ -74,11 +74,13 @@ public class DistributedSystem {
         DistributedNode n3 = new DistributedNode("Node_C", new Mailbox(), msgHandler);
         n1.setLocalDataValue("POOL"); n2.setLocalDataValue("POOL"); n3.setLocalDataValue("POOL");
 
-        String domainA = activeNaming == NameServer.NamingMode.FLAT ? "star.asia.Node_A" : "Node_A";
-        String domainB = activeNaming == NameServer.NamingMode.FLAT ? "star.europe.Node_B" : "Node_B";
-        String domainC = activeNaming == NameServer.NamingMode.FLAT ? "onworld.asia.Node_C" : "Node_C";
-        dns.register(domainA, n1.getMyMailbox()); dns.register(domainB, n2.getMyMailbox()); dns.register(domainC, n3.getMyMailbox());
-
+        String domainA = "star.asia.Node_A";
+        String domainB = "star.europe.Node_B";
+        String domainC = "onworld.asia.Node_C";
+        dns.register(domainA, n1.getMyMailbox());
+        dns.register(domainB, n2.getMyMailbox());
+        dns.register(domainC, n3.getMyMailbox());
+        
         List<DistributedNode> cluster = Arrays.asList(n1, n2, n3);
         ExecutorService systemHardwareGrid = Executors.newFixedThreadPool(3);
         cluster.forEach(systemHardwareGrid::execute); // Mount process loops on thread boundaries [INDEX]
