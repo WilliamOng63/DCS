@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
+
 package distributedsystem;
 import java.util.*;
 import java.util.concurrent.*;
@@ -17,14 +14,14 @@ import java.util.concurrent.ThreadLocalRandom; // Lock-free high-concurrency ran
 
 
 public class DistributedSystem {
-    public enum Scenario { NORMAL, HIGH_CONCURRENCY, NODE_FAILURE }
+    public enum Scenario { NORMAL, HIGH_CONCURRENCY, NODE_FAILURE }  //we have 3 scenerio
 
     public static void main(String[] args) throws InterruptedException {
         System.out.println("==================================================================");
         System.out.println("   DISTRIFLY: ENTERPRISE DISTRIBUTED SYSTEM REPLICATION GRID     ");
         System.out.println("==================================================================\n");
 
-        // 🚀 RUN ALL 4 PERFORMANCE TEST COMBINATIONS
+        //  RUN ALL 4 PERFORMANCE TEST COMBINATIONS
         System.out.println(">>> RUNNING ALL 4 PERFORMANCE METRIC CONFIGURATIONS <<<\n");
         
         // Test 1: Eventual Consistency + Structured Naming
@@ -57,7 +54,7 @@ public class DistributedSystem {
     }
 
     public static void runPerformanceTest(boolean useSequentialEngine, NameServer.NamingMode activeNaming) throws InterruptedException {
-        // 🚀 CONTROL PANEL FOR A/B SYSTEM MODE TESTING
+        // CONTROL PANEL FOR SYSTEM MODE TESTING
         Scenario activeScenario = Scenario.NORMAL; 
 
         System.out.println(">>> System Deployment Scenario : " + activeScenario);
@@ -90,12 +87,12 @@ public class DistributedSystem {
         MessageHandler.telemetry.totalRequests.set(0);
         MessageHandler.telemetry.successfulBookings.set(0);
         MessageHandler.telemetry.conflictsDetected.set(0);
-        MessageHandler.telemetry.clientSideRejections.set(0);  // 🚀 NEW: Reset rejection counter
+        MessageHandler.telemetry.clientSideRejections.set(0);  //  Reset rejection counter
         MessageHandler.telemetry.totalReads.set(0);
         MessageHandler.telemetry.staleReadsDetected.set(0);
-        MessageHandler.telemetry.messagesProcessed.set(0);  // 🚀 NEW: Reset message counter
+        MessageHandler.telemetry.messagesProcessed.set(0);  //  Reset message counter
         MessageHandler.telemetry.totalLatencyMs.set(0);
-        MessageHandler.telemetry.cumulativeOperationLatencyMs.set(0);  // 🚀 NEW: Reset cumulative latency
+        MessageHandler.telemetry.cumulativeOperationLatencyMs.set(0);  // Reset cumulative latency
 
         int numUsers = (activeScenario == Scenario.HIGH_CONCURRENCY) ? 100 : 10;
         int numOperations = (activeScenario == Scenario.HIGH_CONCURRENCY) ? 1000 : 100;
@@ -121,14 +118,14 @@ public class DistributedSystem {
                 String passengerId = "Passenger-" + Thread.currentThread().getId() + "-" + ThreadLocalRandom.current().nextInt(100);
                 DistributedNode targetedServer = cluster.get(ThreadLocalRandom.current().nextInt(cluster.size()));
 
-                // FIX 1: Log the read operation manually since we are directly accessing local memory
+                // Log the read operation manually since we are directly accessing local memory
                 MessageHandler.telemetry.totalReads.incrementAndGet();
                 
                 //Check local server for the seat availability
                 String localVariableSnapshot = targetedServer.getDataValue();
                 boolean looksVacantLocally = localVariableSnapshot == null || !localVariableSnapshot.contains(targetSeatCode + ":OCCUPIED");
                 
-                // FIX 3: Prevent False Stale Reads for Sequential Consistency
+                // Prevent False Stale Reads for Sequential Consistency
                 // Only flag stale reads if we are running the Eventual Consistency engine.
                 if (!useSequentialEngine && globalTruthOracle.containsKey(targetSeatCode) && looksVacantLocally) {
                     MessageHandler.telemetry.staleReadsDetected.incrementAndGet(); 
@@ -142,17 +139,17 @@ public class DistributedSystem {
                         Message bookingPacket = new Message(networkProfile, Message.Command.WRITE, targetSeatCode, passengerId, operationStartTime, passengerId, -1);
                         targetedServer.getMyMailbox().send(resolvedNIC, bookingPacket); 
 
-                        // 🚀 NEW: Track latency for Sequential Consistency writes
+                        // Track latency for Sequential Consistency writes
                         // Sequential handler will add its consensus delay to metrics
                         // Eventual handler will add its fast latency to metrics
                         
                         globalTruthOracle.compute(targetSeatCode, (k, currentOwner) -> {
                            if (currentOwner == null) {
-                              // FIX 2: Removed totalRequests double-counting here!
+                              // Removed totalRequests double-counting 
                                 MessageHandler.telemetry.successfulBookings.incrementAndGet();
                                 return passengerId;
                             } else {
-                               // 🛡️ IMPROVED: Only let the Oracle count conflicts for Eventual Consistency
+                               //  Only let the Oracle count conflicts for Eventual Consistency
                                 // Sequential Consistency rejects conflicts at the client level (pessimistic locking)
                                 // So it should have near-zero cluster collisions
                                 if (!useSequentialEngine) {
@@ -163,7 +160,7 @@ public class DistributedSystem {
                         });
                     }
                 } else if (useSequentialEngine && !looksVacantLocally) {
-                    // 🚀 NEW: Track client-side rejections for Sequential Consistency
+                    // Track client-side rejections for Sequential Consistency
                     // This accounts for pessimistic locking rejections at the client level
                     MessageHandler.telemetry.clientSideRejections.incrementAndGet();
                 }
@@ -175,18 +172,18 @@ public class DistributedSystem {
         System.out.println("[WORKLOAD FLUSHED] Waiting 4 seconds for network convergence...");
         Thread.sleep(4000); // Timeline tracking buffer for lagging mail elements [INDEX]
 
-        // ✈️ Executing live process migration state transfer prior to clock stoppage [INDEX, INDEX]
+        // Executing live process migration state transfer prior to clock stoppage [INDEX, INDEX]
         System.out.println("\n>>> [PROCESS OPTIMIZATION] Executing live state migration trial (Node_A -> Node_C) <<<");
         n1.migrateStateTo(domainC, dns); 
         Thread.sleep(1500); 
 
-        // 🚀 ACCURATE TELEMETRY CAPTURE STOPPAGE WHEEL
+        //  ACCURATE TELEMETRY CAPTURE STOPPAGE WHEEL
         long systemEndTimestamp = System.currentTimeMillis();
 
         clientStormPool.shutdown(); systemHardwareGrid.shutdownNow(); // Trip circuit breakers safely [INDEX]
         
-        // 🚀 EXPORT ENGINE BINDING: Output both macro-telemetry reports cleanly with 0 console spam
-        dns.printSummaryReport(); // ◄── Added to print name server path hops & network drop ratios
+        //  EXPORT ENGINE BINDING: Output both macro-telemetry reports cleanly with 0 console spam
+        dns.printSummaryReport(); // Added to print name server path hops & network drop ratios
         
         String consistencyType = useSequentialEngine ? "SEQUENTIAL" : "EVENTUAL";
         String namingType = activeNaming == NameServer.NamingMode.FLAT ? "FLAT" : "STRUCTURED";
