@@ -183,7 +183,7 @@ public class DistributedSystem {
         clientStormPool.shutdown(); systemHardwareGrid.shutdownNow(); // Trip circuit breakers safely [INDEX]
         
         //  EXPORT ENGINE BINDING: Output both macro-telemetry reports cleanly with 0 console spam
-        dns.printSummaryReport(); // Added to print name server path hops & network drop ratios
+        dns.printSummaryReport(); // Added to print name server path hops & network drop ratios from messageHandle.java
         
         String consistencyType = useSequentialEngine ? "SEQUENTIAL" : "EVENTUAL";
         String namingType = activeNaming == NameServer.NamingMode.FLAT ? "FLAT" : "STRUCTURED";
