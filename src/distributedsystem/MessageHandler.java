@@ -23,22 +23,22 @@ public class MessageHandler {
     public consistencyHandler getHandler() { return handler; }
 
     public synchronized void handleIncomingMessage(DistributedNode node, Message msg) {
-        // 🚀 FIXED: Calculate actual per-operation latency from message creation time to processing time
+        // Calculate actual per-operation latency from message creation time to processing time
         long currentTime = System.currentTimeMillis();
         long operationLatency = currentTime - msg.getTimeStamp();
         telemetry.cumulativeOperationLatencyMs.addAndGet(operationLatency);
-        telemetry.messagesProcessed.incrementAndGet();  // 🚀 Track actual messages for accurate latency
+        telemetry.messagesProcessed.incrementAndGet();  //Track actual messages for accurate latency
         
         // Suppressed high-frequency spam logs to keep output clean as requested
         switch (msg.getCommand()) {
             case WRITE:
-                // 1. Log the incoming transaction attempt into global metrics ledger
+                // Log the incoming transaction attempt into global metrics ledger
                 telemetry.totalRequests.incrementAndGet(); 
                 
                 // Track what the oracle expects the latest state to mutate into
                 expectedGlobalLatestValue = msg.getKey() + ":OCCUPIED_BY_" + msg.getValue();
                 
-                // 🚀 Delegate seat occupancy checks to the targeted consistency engine algorithm
+                // Delegate seat occupancy checks to the targeted consistency engine algorithm
                 handler.handleWrite(node, msg);
                 break;
                 
@@ -54,7 +54,6 @@ public class MessageHandler {
             case READ:
                 telemetry.totalReads.incrementAndGet(); 
                 
-                // 2. 🛡️ CRITICAL CORRECTNESS AUDIT BARRIER
                 // Compare the node's local variable snapshot memory with the global logic timeline tracker
                 String localSnapshot = node.getDataValue();
                 
@@ -88,12 +87,12 @@ public class MessageHandler {
         public final java.util.concurrent.atomic.AtomicInteger totalRequests = new java.util.concurrent.atomic.AtomicInteger(0);
         public final java.util.concurrent.atomic.AtomicInteger successfulBookings = new java.util.concurrent.atomic.AtomicInteger(0);
         public final java.util.concurrent.atomic.AtomicInteger conflictsDetected = new java.util.concurrent.atomic.AtomicInteger(0);
-        public final java.util.concurrent.atomic.AtomicInteger clientSideRejections = new java.util.concurrent.atomic.AtomicInteger(0);  // New: Track pessimistic rejections
+        public final java.util.concurrent.atomic.AtomicInteger clientSideRejections = new java.util.concurrent.atomic.AtomicInteger(0);  // Track pessimistic rejections
         public final java.util.concurrent.atomic.AtomicInteger totalReads = new java.util.concurrent.atomic.AtomicInteger(0);
         public final java.util.concurrent.atomic.AtomicInteger staleReadsDetected = new java.util.concurrent.atomic.AtomicInteger(0);
-        public final java.util.concurrent.atomic.AtomicInteger messagesProcessed = new java.util.concurrent.atomic.AtomicInteger(0);  // 🚀 NEW: Count actual messages for latency
+        public final java.util.concurrent.atomic.AtomicInteger messagesProcessed = new java.util.concurrent.atomic.AtomicInteger(0);  //  Count actual messages for latency
         public final java.util.concurrent.atomic.AtomicLong totalLatencyMs = new java.util.concurrent.atomic.AtomicLong(0);
-        public final java.util.concurrent.atomic.AtomicLong cumulativeOperationLatencyMs = new java.util.concurrent.atomic.AtomicLong(0);  // New: Track total latency across operations
+        public final java.util.concurrent.atomic.AtomicLong cumulativeOperationLatencyMs = new java.util.concurrent.atomic.AtomicLong(0);  // Track total latency across operations
 
         public void printReport(long durationMs, String scenarioName) {
             System.out.println("\n==================================================");
@@ -108,7 +107,7 @@ public class MessageHandler {
             System.out.printf("Stale Reads Detected : %d (Overbooking Vector Warnings)\n", staleReadsDetected.get());
             System.out.println("--------------------------------------------------");
             
-            // 🚀 FIXED: Calculate average latency ONLY from messages actually processed (not local reads)
+            //  Calculate average latency ONLY from messages actually processed (not local reads)
             int totalMsgsProcessed = messagesProcessed.get();
             double actualAvgLatency = totalMsgsProcessed > 0 
                 ? (double) cumulativeOperationLatencyMs.get() / totalMsgsProcessed 
