@@ -16,11 +16,11 @@ public class SequentialConsistency implements consistencyHandler {
     private final Map<String, String> centralSeatRegistry = new ConcurrentHashMap<>();
     private final List<Message> globalCommitLog = new CopyOnWriteArrayList<>();
     
-    // 🚀 NEW: Pessimistic locking infrastructure - tracks which keys are currently locked
+    // Pessimistic locking infrastructure - tracks which keys are currently locked
     private final Map<String, Long> pendingLocks = new ConcurrentHashMap<>();  // key -> lock acquisition timestamp
     private final long LOCK_TIMEOUT_MS = 5000;  // Lock expires after 5 seconds
     
-    // 🚀 NEW: Simulated network distance for consensus overhead (in milliseconds)
+    //  Simulated network distance for consensus overhead (in milliseconds)
     private static final int CONSENSUS_DELAY_MIN_MS = 8;
     private static final int CONSENSUS_DELAY_MAX_MS = 15;
 
@@ -31,7 +31,7 @@ public class SequentialConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 NEW: Check if a key is currently locked by another writer (pessimistic locking)
+     *  Check if a key is currently locked by another writer (pessimistic locking)
      * Returns true if the key is free to write; false if it's locked by someone else
      */
     private synchronized boolean acquireLock(String key) {
@@ -48,7 +48,7 @@ public class SequentialConsistency implements consistencyHandler {
     }
     
     /**
-     * 🚀 NEW: Release the lock on a key after write completes
+     *  Release the lock on a key after write completes
      */
     private synchronized void releaseLock(String key) {
         pendingLocks.remove(key);
@@ -59,22 +59,22 @@ public class SequentialConsistency implements consistencyHandler {
         String targetSeat = msg.getKey();
         String passengerId = msg.getValue();
         
-        // 🚀 NEW: Simulate consensus/2PC delay (8-15ms) for strong consistency
+        //  Simulate consensus/2PC delay (8-15ms) for strong consistency
         // This represents quorum gathering, Paxos/Raft rounds, or distributed locking overhead
         try {
             int consensusDelayMs = CONSENSUS_DELAY_MIN_MS + (int)(Math.random() * (CONSENSUS_DELAY_MAX_MS - CONSENSUS_DELAY_MIN_MS));
             Thread.sleep(consensusDelayMs);
             
-            // 🚀 NEW: Track this latency in the message for metrics reporting
+            //  Track this latency in the message for metrics reporting
             // (In a real system, this would be returned in a WRITE_ACK)
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // 🚀 NEW: Pessimistic locking - try to acquire exclusive lock on the key
+        //  Pessimistic locking - try to acquire exclusive lock on the key
         // This represents the "prepare phase" of 2PC or Paxos/Raft quorum gathering
         if (!acquireLock(targetSeat)) 
-{            // 🚀 NEW: Write rejected due to lock contention - pessimistic approach prevents conflicts
+{            //  Write rejected due to lock contention - pessimistic approach prevents conflicts
             MessageHandler.telemetry.clientSideRejections.incrementAndGet();
             return;  // Early rejection - never reaches the cluster
         }
@@ -102,7 +102,7 @@ public class SequentialConsistency implements consistencyHandler {
                     }
                 }
             } else {
-                // 🚀 IMPROVED: Even with pessimistic locking, conflicts can happen if two writers
+                // Even with pessimistic locking, conflicts can happen if two writers
                 // acquire lock and then both check - very rare but logged for completeness
                 // In sequential consistency, this should be near-zero
                 MessageHandler.telemetry.conflictsDetected.incrementAndGet();
