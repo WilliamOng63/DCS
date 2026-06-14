@@ -14,7 +14,7 @@ import java.util.*;
 public class EventualConsistency implements consistencyHandler {
     private final NameServer dns;
     
-    // 🚀 NEW: Simulated latency for eventual consistency writes (fire-and-forget)
+    // Simulated latency for eventual consistency writes (fire-and-forget)
     // Much lower than Sequential Consistency because no consensus needed
     private static final int FAST_LATENCY_MIN_MS = 1;
     private static final int FAST_LATENCY_MAX_MS = 3;
@@ -24,7 +24,7 @@ public class EventualConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 TIMESTAMPED OPTIMISTIC COMMIT FOR FIRST-WRITE-WINS (FWW)
+     *  TIMESTAMPED OPTIMISTIC COMMIT FOR FIRST-WRITE-WINS (FWW)
      * Embeds the write timestamp directly into the string format for conflict resolution.
      * Format: [SEAT]:OCCUPIED_BY_[PASSENGER]@[TIMESTAMP]
      * Example: SEAT_42:OCCUPIED_BY_Passenger-A@1715001234567
@@ -36,7 +36,7 @@ public class EventualConsistency implements consistencyHandler {
         String passengerId = msg.getValue(); // e.g., "Passenger-A"
         long writeTimestamp = msg.getTimeStamp(); // Capture the write request timestamp
 
-        // 🚀 NEW: Simulate low latency for fire-and-forget async write
+        // Simulate low latency for fire-and-forget async write
         // This represents fast local commit without waiting for consensus
         try {
             int fastLatencyMs = FAST_LATENCY_MIN_MS + (int)(Math.random() * (FAST_LATENCY_MAX_MS - FAST_LATENCY_MIN_MS));
@@ -48,18 +48,18 @@ public class EventualConsistency implements consistencyHandler {
             Thread.currentThread().interrupt();
         }
 
-        // 🚀 FWW: Check if this seat already has an entry (which would indicate a conflict)
+        // Check if this seat already has an entry (which would indicate a conflict)
         if (currentSnapshot == null || !currentSnapshot.contains(targetSeat + ":OCCUPIED")) {
             
             // No existing entry for this seat - Append with timestamp embedded in string
             String updatedSnapshot = (currentSnapshot == null || currentSnapshot.contains("INITIAL_NULL") || currentSnapshot.contains("POOL")) 
                                      ? "" : currentSnapshot + ", ";
-            // 🚀 KEY FORMAT: Append timestamp to enable FWW conflict resolution downstream
+            // Append timestamp to enable FWW conflict resolution downstream
             updatedSnapshot += targetSeat + ":OCCUPIED_BY_" + passengerId + "@" + writeTimestamp;
             
             node.setLocalDataValue(updatedSnapshot); // Optimistic low-latency local commit [INDEX]
 
-            // 🚀 QUIET PROPAGATION: Removed the high-frequency println here!
+            //  Removed the high-frequency println here!
             // Broadcast replication data packet over the VLAN wire links asynchronously
             // This happens in the background - write returns to client immediately!
             for (String domain : dns.getAllNodes()) {
@@ -71,7 +71,7 @@ public class EventualConsistency implements consistencyHandler {
                         Message.Command.REPLICATE, 
                         targetSeat,
                         updatedSnapshot, // Push the raw un-sequenced memory frame map over wire [INDEX]
-                        writeTimestamp,  // 🚀 Pass the original write timestamp for FWW comparison
+                        writeTimestamp,  // Pass the original write timestamp for FWW comparison
                         node.getNodeId(),
                         -1 
                     );
@@ -80,7 +80,7 @@ public class EventualConsistency implements consistencyHandler {
                 }
             }
         } else {
-            // 🚀 NEW: In eventual consistency, conflicts are allowed at the local level
+            // In eventual consistency, conflicts are allowed at the local level
             // They get resolved later during background replication (First-Write-Wins)
             // This is why eventual consistency has high throughput but eventual conflicts
             MessageHandler.telemetry.conflictsDetected.incrementAndGet();
@@ -88,12 +88,12 @@ public class EventualConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 QUIET DUAL-PURPOSE READ RESOLUTION
+     * QUIET DUAL-PURPOSE READ RESOLUTION
      * Silenced all client query logs while preserving pure distributed active anti-entropy loops.
      */
     @Override
     public void handleRead(DistributedNode node, Message msg) {
-        // 🚀 Removed high-frequency passenger check queries to keep terminal clean!
+        // Removed high-frequency passenger check queries to keep terminal clean
         
         // Anti-Entropy Trigger: If this read probe is sent from a lagging rebooted peer... [INDEX]
         if (msg.getSenderId() != null 
@@ -111,7 +111,7 @@ public class EventualConsistency implements consistencyHandler {
                     Message.Type.EVENTUAL,
                     Message.Command.REPLICATE, 
                     msg.getKey(),
-                    node.getDataValue(), // 🚀 True decentralized data exchange from actual RAM [INDEX]
+                    node.getDataValue(), // True decentralized data exchange from actual RAM [INDEX]
                     System.currentTimeMillis(),
                     node.getNodeId(),
                     -1
@@ -122,7 +122,7 @@ public class EventualConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 THE TIMESTAMP DUEL: FIRST-WRITE-WINS (FWW) RECEIVER VALIDATION
+     *  THE TIMESTAMP DUEL: FIRST-WRITE-WINS (FWW) RECEIVER VALIDATION
      * When receiving a REPLICATE message with a timestamped record:
      * - Parse the incoming message to extract target seat and incoming timestamp
      * - Search local dataValue for that specific seat
@@ -138,14 +138,14 @@ public class EventualConsistency implements consistencyHandler {
         String incomingState = msg.getValue();      // The full updated snapshot from the sender
         String senderId = msg.getSenderId();
         
-        // 🚀 PARSE: Extract the timestamp from the incoming replicated record for this specific seat
+        // PARSE: Extract the timestamp from the incoming replicated record for this specific seat
         long parsedIncomingTimestamp = extractTimestampForSeat(incomingState, targetSeat);
         
-        // 🚀 SEARCH: Check if we already have an entry for this seat
+        // SEARCH: Check if we already have an entry for this seat
         boolean seatExistsLocally = currentSnapshot != null && currentSnapshot.contains(targetSeat + ":OCCUPIED");
         
         if (!seatExistsLocally) {
-            // ✅ NO CONFLICT: Seat is not in our local memory. Append the incoming record.
+            // NO CONFLICT: Seat is not in our local memory. Append the incoming record.
             String updatedSnapshot = (currentSnapshot == null || currentSnapshot.isEmpty() || currentSnapshot.contains("INITIAL_NULL")) 
                                      ? incomingState 
                                      : currentSnapshot + ", " + extractSeatRecordFromSnapshot(incomingState, targetSeat);
@@ -167,11 +167,11 @@ public class EventualConsistency implements consistencyHandler {
                 node.getMyMailbox().send(senderMailbox, ackMsg);
             }
         } else {
-            // ⚔️ CONFLICT DETECTED: Seat exists in local memory. Compare timestamps.
+            //  CONFLICT DETECTED: Seat exists in local memory. Compare timestamps.
             long localTimestamp = extractTimestampForSeat(currentSnapshot, targetSeat);
             
             if (parsedIncomingTimestamp < localTimestamp) {
-                // ✅ INCOMING WINS: Incoming message was requested FIRST (smaller timestamp = earlier request)
+                //  INCOMING WINS: Incoming message was requested FIRST (smaller timestamp = earlier request)
                 // Replace the local entry with the incoming (older) entry
                 String updatedSnapshot = replaceSeatRecordInSnapshot(currentSnapshot, targetSeat, 
                                                                      extractSeatRecordFromSnapshot(incomingState, targetSeat));
@@ -193,7 +193,7 @@ public class EventualConsistency implements consistencyHandler {
                     node.getMyMailbox().send(senderMailbox, ackMsg);
                 }
             } else {
-                // ✅ LOCAL WINS: Local message was requested FIRST (local timestamp is older/smaller)
+                //  LOCAL WINS: Local message was requested FIRST (local timestamp is older/smaller)
                 // Reject the incoming message and send NACK with the authoritative local record
                 String localSeatRecord = extractSeatRecordFromSnapshot(currentSnapshot, targetSeat);
                 
@@ -201,7 +201,7 @@ public class EventualConsistency implements consistencyHandler {
                     Message.Type.EVENTUAL,
                     Message.Command.REPLICATE_NACK,
                     targetSeat,
-                    localSeatRecord,  // 🚀 Send ONLY the winning local seat record as the payload
+                    localSeatRecord,  //  Send ONLY the winning local seat record as the payload
                     System.currentTimeMillis(),
                     node.getNodeId(),
                     msg.getSequenceId()
@@ -223,7 +223,7 @@ public class EventualConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 BACKGROUND ROLLBACK: FIRST-WRITE-WINS (FWW) NEGATIVE ACKNOWLEDGMENT
+     * BACKGROUND ROLLBACK: FIRST-WRITE-WINS (FWW) NEGATIVE ACKNOWLEDGMENT
      * When receiving a REPLICATE_NACK, the original sender learns it lost the timestamp race.
      * Parse the payload to get the authoritative (older) booking record.
      * Use String manipulation to replace the incorrect local booking with the correct one.
@@ -235,7 +235,7 @@ public class EventualConsistency implements consistencyHandler {
         String targetSeat = msg.getKey();
         String currentSnapshot = node.getDataValue();
         
-        // 🚀 ROLLBACK: Find and replace the incorrect local entry with the authoritative entry
+        // ROLLBACK: Find and replace the incorrect local entry with the authoritative entry
         if (currentSnapshot != null && currentSnapshot.contains(targetSeat + ":OCCUPIED")) {
             // Replace the local seat record with the authoritative one from the NACK
             String correctedSnapshot = replaceSeatRecordInSnapshot(currentSnapshot, targetSeat, authoritativeSeatRecord);
@@ -250,7 +250,7 @@ public class EventualConsistency implements consistencyHandler {
     }
 
     /**
-     * 🚀 ACTIVE ANTI-ENTROPY INTERFACE REBOOT DETECTOR
+     * ACTIVE ANTI-ENTROPY INTERFACE REBOOT DETECTOR
      * Executed exactly once upon Scenario 3 failure recovery to realign parameters silently.
      */
     @Override
@@ -281,10 +281,10 @@ public class EventualConsistency implements consistencyHandler {
         }
     }
     
-    // ==================== 🚀 FWW HELPER METHODS ====================
+    // ====================  FWW HELPER METHODS ====================
     
     /**
-     * 🚀 EXTRACT TIMESTAMP FOR A SPECIFIC SEAT FROM SNAPSHOT
+     *  EXTRACT TIMESTAMP FOR A SPECIFIC SEAT FROM SNAPSHOT
      * Parses the comma-separated snapshot to find the specific seat record and extract its timestamp.
      * Format: SEAT_42:OCCUPIED_BY_Passenger-A@1715001234567
      * Returns the timestamp, or 0 if not found.
@@ -318,7 +318,7 @@ public class EventualConsistency implements consistencyHandler {
     }
     
     /**
-     * 🚀 EXTRACT SEAT RECORD FROM SNAPSHOT
+     *  EXTRACT SEAT RECORD FROM SNAPSHOT
      * Returns the complete seat record for a specific seat (including timestamp).
      * Format: SEAT_42:OCCUPIED_BY_Passenger-A@1715001234567
      * Returns null if not found.
@@ -343,7 +343,7 @@ public class EventualConsistency implements consistencyHandler {
     }
     
     /**
-     * 🚀 REPLACE SEAT RECORD IN SNAPSHOT
+     *  REPLACE SEAT RECORD IN SNAPSHOT
      * Replaces the entry for a specific seat with a new record.
      * Properly handles the comma-separated format.
      * If oldRecord is not found, appends newRecord to the snapshot.
