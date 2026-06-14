@@ -77,7 +77,7 @@ public class DistributedNode implements Node, Runnable {
                 // Blocks here cleanly without burning CPU waiting for packets [INDEX]
                 Message msg = myMailbox.receive(); 
                 
-                // ARCHITECTURAL FIX: Completely silenced the high-frequency drop println logs!
+                //  Completely silenced the high-frequency drop println logs!
                 // Drops packets into the vacuum silently during crashes or post-migrations to bypass terminal I/O latency.
                 if (!isAlive || isMigrated) {
                     continue; 
