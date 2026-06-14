@@ -14,8 +14,8 @@ public class Message {
         WRITE,  
         READ,    
         REPLICATE,
-        REPLICATE_ACK,    // New: Acknowledge successful replication (FWW - no conflict)
-        REPLICATE_NACK,   // New: Reject replication due to conflict (FWW - peer has earlier write)
+        REPLICATE_ACK,    //  Acknowledge successful replication (FWW - no conflict)
+        REPLICATE_NACK,   // Reject replication due to conflict (FWW - peer has earlier write)
         MIGRATE,
         WRITE_ACK  // New: Acknowledge successful write with latency info
     }
