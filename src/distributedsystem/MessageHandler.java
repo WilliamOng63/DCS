@@ -47,7 +47,7 @@ public class MessageHandler {
                 break;
                 
             case REPLICATE_NACK:
-                // 🚀 NEW: FWW - Peer had earlier write, rollback our optimistic commit
+                //  FWW - Peer had earlier write, rollback our optimistic commit
                 handler.handleReplicateNack(node, msg);
                 break;
                 
